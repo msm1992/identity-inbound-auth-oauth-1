@@ -718,4 +718,36 @@ public class TokenManagementDAOImpl extends AbstractOAuthDAO implements TokenMan
         return distinctConsumerKeys;
     }
 
+    @Override
+    public Set<String> findProductScopesAttachedToResource(String resourceUri) throws IdentityOAuth2Exception {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Retrieving product scopes for resource: " + resourceUri);
+        }
+        String sql;
+        try (Connection connection = IdentityDatabaseUtil.getDBConnection()) {
+
+            if (connection.getMetaData().getDriverName().contains(Oauth2ScopeConstants.DataBaseType.ORACLE)) {
+                sql = "";
+            } else {
+                sql = SQLQueries.RETRIEVE_PRODUCT_SCOPES_FOR_RESOURCE;
+            }
+
+            Set<String> productScopes = new HashSet<>();
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, resourceUri);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String scopeName = rs.getString("NAME");
+                        productScopes.add(scopeName);
+                    }
+                }
+            }
+            return productScopes;
+        } catch (SQLException e) {
+            String errorMsg = "Error getting scopes for resource - " + resourceUri;
+            throw new IdentityOAuth2Exception(errorMsg, e);
+        }
+    }
+
 }

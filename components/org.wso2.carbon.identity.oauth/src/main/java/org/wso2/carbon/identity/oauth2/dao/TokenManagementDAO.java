@@ -65,4 +65,6 @@ public interface TokenManagementDAO {
             IdentityOAuth2Exception;
 
     Set<String> getAllTimeAuthorizedClientIds(AuthenticatedUser authzUser) throws IdentityOAuth2Exception;
+
+    Set<String> findProductScopesAttachedToResource(String resourceUri) throws IdentityOAuth2Exception;
 }

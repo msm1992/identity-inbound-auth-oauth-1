@@ -103,6 +103,8 @@ public class JDBCScopeValidator extends OAuth2ScopeValidator {
         if (!cacheHit) {
             Pair<String, Integer> scopeMap = OAuthTokenPersistenceFactory.getInstance()
                     .getTokenManagementDAO().findTenantAndScopeOfResource(resource);
+            Set<String> productScopes = OAuthTokenPersistenceFactory.getInstance()
+                    .getTokenManagementDAO().findProductScopesAttachedToResource(resource);
 
             if (scopeMap != null) {
                 resourceScope = scopeMap.getLeft();
@@ -112,6 +114,11 @@ public class JDBCScopeValidator extends OAuth2ScopeValidator {
             cacheKey = new OAuthCacheKey(resource);
             ResourceScopeCacheEntry cacheEntry = new ResourceScopeCacheEntry(resourceScope);
             cacheEntry.setTenantId(resourceTenantId);
+            if (productScopes.size() > 0) {
+                cacheEntry.setProductScopes(productScopes);
+            } else {
+                cacheEntry.setProductScopes(null);
+            }
             //Store resourceScope in cache even if it is null (to avoid database calls when accessing resources for
             //which scopes haven't been defined).
             OAuthCache.getInstance().addToCache(cacheKey, cacheEntry);

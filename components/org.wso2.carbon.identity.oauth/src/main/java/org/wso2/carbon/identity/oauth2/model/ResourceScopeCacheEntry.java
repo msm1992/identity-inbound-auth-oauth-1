@@ -20,11 +20,15 @@ package org.wso2.carbon.identity.oauth2.model;
 
 import org.wso2.carbon.identity.oauth.cache.CacheEntry;
 
+import java.util.Set;
+
 public class ResourceScopeCacheEntry extends CacheEntry {
 
     private static final long serialVersionUID = 8986718905978405685L;
 
     private String scope;
+
+    private Set<String> productScopes;
 
     private int tenantId;
 
@@ -46,6 +50,14 @@ public class ResourceScopeCacheEntry extends CacheEntry {
 
     public void setTenantId(int tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public void setProductScopes(Set<String> productScopes) {
+        this.productScopes = productScopes;
+    }
+
+    public Set<String> getProductScopes() {
+        return productScopes;
     }
 
 }
