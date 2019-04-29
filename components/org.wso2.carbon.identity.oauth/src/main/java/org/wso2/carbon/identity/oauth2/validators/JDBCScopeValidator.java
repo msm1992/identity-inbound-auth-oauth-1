@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.oauth2.validators;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -119,17 +120,21 @@ public class JDBCScopeValidator extends OAuth2ScopeValidator {
         }
 
         //Return TRUE if - There does not exist a scope definition for the resource
-        if (resourceScope == null) {
+        if (StringUtils.isEmpty(resourceScope)) {
             if(log.isDebugEnabled()){
                 log.debug("Resource '" + resource + "' is not protected with a scope");
             }
             return true;
         }
 
-        List<String> scopeList = new ArrayList<>(Arrays.asList(scopes));
+        List<String> tokenScopeList = new ArrayList<>(Arrays.asList(scopes));
+        List<String> resourceScopes = Arrays.asList(resourceScope.split(", "));
 
-        //If the access token does not bear the scope required for accessing the Resource.
-        if(!scopeList.contains(resourceScope)){
+        List<String> commonScopes = new ArrayList<>(tokenScopeList);
+        //If the access token does not bear any of the scopes required for accessing the Resource.
+
+        commonScopes.retainAll(resourceScopes);
+        if(commonScopes.size() == 0){
             if(log.isDebugEnabled() && IdentityUtil.isTokenLoggable(IdentityConstants.IdentityTokens.ACCESS_TOKEN)){
                 log.debug("Access token '" + accessTokenDO.getAccessToken() + "' does not bear the scope '" +
                             resourceScope + "'");
