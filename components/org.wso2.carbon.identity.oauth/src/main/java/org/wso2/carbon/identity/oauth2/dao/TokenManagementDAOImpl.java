@@ -327,15 +327,22 @@ public class TokenManagementDAOImpl extends AbstractOAuthDAO implements TokenMan
 
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setString(1, resourceUri);
+
+                String scopeList = "";
+                int tenantId = -1;
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        String scopeName = rs.getString("NAME");
-                        int tenantId = rs.getInt("TENANT_ID");
+                        if (rs.getRow() == 1) {
+                            scopeList += rs.getString("NAME");
+                            tenantId = rs.getInt("TENANT_ID");
+                        } else {
+                            scopeList += ", " + rs.getString("NAME");
+                        }
                         if (log.isDebugEnabled()) {
-                            log.debug("Found tenant id: " + tenantId + " and scope: " + scopeName + " for resource: " +
+                            log.debug("Found tenant id: " + tenantId + " and scopes: " + scopeList + " for resource: " +
                                     resourceUri);
                         }
-                        return Pair.of(scopeName, tenantId);
+                        return Pair.of(scopeList, tenantId);
                     }
                 }
             }
