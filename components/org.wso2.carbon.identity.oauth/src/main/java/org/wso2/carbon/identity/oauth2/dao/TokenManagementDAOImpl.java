@@ -336,7 +336,7 @@ public class TokenManagementDAOImpl extends AbstractOAuthDAO implements TokenMan
                             scopeList += rs.getString("NAME");
                             tenantId = rs.getInt("TENANT_ID");
                         } else {
-                            scopeList += ", " + rs.getString("NAME");
+                            scopeList += "," + rs.getString("NAME");
                         }
                         if (log.isDebugEnabled()) {
                             log.debug("Found tenant id: " + tenantId + " and scopes: " + scopeList + " for resource: " +
