@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.identity.oauth.scope.endpoint.impl;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
@@ -34,6 +35,7 @@ import org.wso2.carbon.identity.oauth2.bean.Scope;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
@@ -94,13 +96,14 @@ public class ScopesApiServiceImpl extends ScopesApiService {
     @Override
     public Response getScope(String name) {
 
+        String decodedScopeName = new String(Base64.decodeBase64(name), StandardCharsets.UTF_8);
         Scope scope = null;
 
         try {
-            scope = ScopeUtils.getOAuth2ScopeService().getScope(name);
+            scope = ScopeUtils.getOAuth2ScopeService().getScope(decodedScopeName);
         } catch (IdentityOAuth2ScopeClientException e) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Client Error while getting scope " + name, e);
+                LOG.debug("Client Error while getting scope " + decodedScopeName, e);
             }
             if (Oauth2ScopeConstants.ErrorMessages.ERROR_CODE_NOT_FOUND_SCOPE.getCode().equals(e.getErrorCode())) {
                 ScopeUtils.handleErrorResponse(Response.Status.NOT_FOUND,
