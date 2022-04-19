@@ -404,15 +404,16 @@ public class JDBCScopeValidator extends OAuth2ScopeValidator {
         if (preservedCaseSensitive) {
             rolesOfScope.retainAll(Arrays.asList(userRoles));
         } else {
+            Set<String> rolesOfScopeLowerCase = new HashSet<>();
             for (String roleOfScope : rolesOfScope) {
-                rolesOfScope.remove(roleOfScope);
-                rolesOfScope.add(roleOfScope.toLowerCase());
+                rolesOfScopeLowerCase.add(roleOfScope.toLowerCase());
             }
             ArrayList<String> userRolesLowercase = new ArrayList<>();
             for (String userRole : userRoles) {
                 userRolesLowercase.add(userRole.toLowerCase());
             }
-            rolesOfScope.retainAll(userRolesLowercase);
+            rolesOfScopeLowerCase.retainAll(userRolesLowercase);
+            rolesOfScope = rolesOfScopeLowerCase;
         }
         rolesOfScope.retainAll(Arrays.asList(userRoles));
 
