@@ -202,9 +202,10 @@ public class UserAuthenticationEndpointTest extends TestOAuthEndpointBase {
         when(serviceURLBuilder.build()).thenReturn(serviceURL);
         when(serviceURL.getAbsolutePublicURL()).thenReturn(TEST_URL);
 
+        DeviceAuthServiceImpl deviceAuthService = new DeviceAuthServiceImpl();
+        OAuth2AuthzEndpoint.setDeviceAuthService(deviceAuthService);
         when(oAuth2AuthzEndpoint.authorize(any(CommonAuthRequestWrapper.class), any(HttpServletResponse.class)))
                 .thenReturn(response);
-        DeviceAuthServiceImpl deviceAuthService = new DeviceAuthServiceImpl();
         userAuthenticationEndpoint = new UserAuthenticationEndpoint();
         userAuthenticationEndpoint.setDeviceAuthService(deviceAuthService);
         WhiteboxImpl.setInternalState(userAuthenticationEndpoint, OAuth2AuthzEndpoint.class, oAuth2AuthzEndpoint);

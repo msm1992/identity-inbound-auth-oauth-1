@@ -43,6 +43,7 @@ import org.apache.oltu.oauth2.common.message.OAuthResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.owasp.encoder.Encode;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticationService;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus;
 import org.wso2.carbon.identity.application.authentication.framework.CommonAuthenticationHandler;
@@ -141,6 +142,7 @@ import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
 import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil;
 import org.wso2.carbon.identity.openidconnect.OIDCConstants;
 import org.wso2.carbon.identity.openidconnect.OIDCRequestObjectUtil;
+import org.wso2.carbon.identity.openidconnect.OpenIDConnectClaimFilter;
 import org.wso2.carbon.identity.openidconnect.OpenIDConnectClaimFilterImpl;
 import org.wso2.carbon.identity.openidconnect.model.RequestObject;
 import org.wso2.carbon.identity.openidconnect.model.RequestedClaim;
@@ -280,25 +282,24 @@ public class OAuth2AuthzEndpoint {
     private static final ApiAuthnHandler API_AUTHN_HANDLER = new ApiAuthnHandler();
 
     public static OpenIDConnectClaimFilterImpl getOpenIDConnectClaimFilter() {
-
-        return openIDConnectClaimFilter;
+        return openIDConnectClaimFilter == null ? (OpenIDConnectClaimFilterImpl) PrivilegedCarbonContext.
+                getThreadLocalCarbonContext().getOSGiService(OpenIDConnectClaimFilter.class, null) :
+                openIDConnectClaimFilter;
     }
 
     public static void setOpenIDConnectClaimFilter(OpenIDConnectClaimFilterImpl openIDConnectClaimFilter) {
-
         OAuth2AuthzEndpoint.openIDConnectClaimFilter = openIDConnectClaimFilter;
     }
 
     public static ScopeMetadataService getScopeMetadataService() {
-
-        return scopeMetadataService;
+        return  scopeMetadataService == null ? (ScopeMetadataService) PrivilegedCarbonContext.
+                getThreadLocalCarbonContext().getOSGiService(ScopeMetadataService.class, null) :
+                scopeMetadataService;
     }
 
     public static void setScopeMetadataService(ScopeMetadataService scopeMetadataService) {
-
         OAuth2AuthzEndpoint.scopeMetadataService = scopeMetadataService;
     }
-
     private static Class<? extends OAuthAuthzRequest> oAuthAuthzRequestClass;
 
     @GET
@@ -919,7 +920,7 @@ public class OAuth2AuthzEndpoint {
             throws SSOConsentServiceException {
 
         List<String> claimsListOfScopes =
-                openIDConnectClaimFilter.getClaimsFilteredByOIDCScopes(oAuth2Parameters.getScopes(),
+                getOpenIDConnectClaimFilter().getClaimsFilteredByOIDCScopes(oAuth2Parameters.getScopes(),
                         oAuth2Parameters.getTenantDomain());
         if (hasPromptContainsConsent(oAuth2Parameters)) {
             // Ignore all previous consents and get consent required claims
@@ -3280,7 +3281,7 @@ public class OAuth2AuthzEndpoint {
 
         // Get the claims uri list of all the requested scopes. Eg:- country, email.
         List<String> claimListOfScopes =
-                openIDConnectClaimFilter.getClaimsFilteredByOIDCScopes(oauth2Params.getScopes(), spTenantDomain);
+                getOpenIDConnectClaimFilter().getClaimsFilteredByOIDCScopes(oauth2Params.getScopes(), spTenantDomain);
 
         List<String> essentialRequestedClaims = new ArrayList<>();
 
@@ -3355,7 +3356,7 @@ public class OAuth2AuthzEndpoint {
             throws SSOConsentServiceException {
 
         List<String> claimsListOfScopes =
-                openIDConnectClaimFilter.getClaimsFilteredByOIDCScopes(oAuth2Parameters.getScopes(),
+                getOpenIDConnectClaimFilter().getClaimsFilteredByOIDCScopes(oAuth2Parameters.getScopes(),
                         oAuth2Parameters.getTenantDomain());
         if (useExistingConsents) {
             return getSSOConsentService().getConsentRequiredClaimsWithExistingConsents(serviceProvider, user,
@@ -4347,8 +4348,12 @@ public class OAuth2AuthzEndpoint {
      * @param deviceAuthService Device authentication service.
      */
     public static void setDeviceAuthService(DeviceAuthService deviceAuthService) {
-
         OAuth2AuthzEndpoint.deviceAuthService = deviceAuthService;
+    }
+
+    public static DeviceAuthService getDeviceAuthService() {
+        return deviceAuthService == null ? (DeviceAuthService) PrivilegedCarbonContext.getThreadLocalCarbonContext().
+                getOSGiService(DeviceAuthService.class, null) : deviceAuthService;
     }
 
     private void cacheUserAttributesByDeviceCode(SessionDataCacheEntry sessionDataCacheEntry)
@@ -4371,7 +4376,7 @@ public class OAuth2AuthzEndpoint {
     private Optional<String> getDeviceCodeByUserCode(String userCode) throws OAuthSystemException {
 
         try {
-            return deviceAuthService.getDeviceCode(userCode);
+            return getDeviceAuthService().getDeviceCode(userCode);
         } catch (IdentityOAuth2Exception e) {
             throw new OAuthSystemException("Error occurred while retrieving device code for user code: " + userCode, e);
         }
