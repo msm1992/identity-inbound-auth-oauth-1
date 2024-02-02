@@ -25,6 +25,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.json.JSONObject;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.persistence.DBConnectionException;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
@@ -56,7 +57,10 @@ public class OAuthClientAuthenticatorProxy extends AbstractPhaseInterceptor<Mess
     }
 
     public OAuthClientAuthnService getOAuthClientAuthnService() {
-
+        if (oAuthClientAuthnService == null) {
+            oAuthClientAuthnService = (OAuthClientAuthnService) PrivilegedCarbonContext.getThreadLocalCarbonContext().
+                    getOSGiService(OAuthClientAuthnService.class, null);
+        }
         return oAuthClientAuthnService;
     }
 
